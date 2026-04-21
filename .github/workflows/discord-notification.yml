@@ -1,0 +1,70 @@
+name: Discord Notification
+
+on:
+  push:
+    branches: [main]
+  issues:
+    types: [opened, closed]
+  pull_request:
+    types: [opened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            AUTHOR="${{ github.actor }}"
+            MESSAGE="${{ github.event.head_commit.message }}"
+            URL="${{ github.event.head_commit.url }}"
+            PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "Push to main",
+              "description": "$MESSAGE",
+              "url": "$URL",
+              "color": 14177541,
+              "author": { "name": "$AUTHOR" },
+              "footer": { "text": "${{ github.repository }}" }
+            }]
+          }
+          EOF
+          )
+          elif [ "${{ github.event_name }}" = "issues" ]; then
+            TITLE="${{ github.event.issue.title }}"
+            URL="${{ github.event.issue.html_url }}"
+            ACTION="${{ github.event.action }}"
+            PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "Issue $ACTION: $TITLE",
+              "url": "$URL",
+              "color": 16753920,
+              "footer": { "text": "${{ github.repository }}" }
+            }]
+          }
+          EOF
+          )
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            TITLE="${{ github.event.pull_request.title }}"
+            URL="${{ github.event.pull_request.html_url }}"
+            ACTION="${{ github.event.action }}"
+            PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "PR $ACTION: $TITLE",
+              "url": "$URL",
+              "color": 5763719,
+              "footer": { "text": "${{ github.repository }}" }
+            }]
+          }
+          EOF
+          )
+          fi
+
+          curl -H "Content-Type: application/json" \
+               -d "$PAYLOAD" \
+               "$DISCORD_WEBHOOK"
