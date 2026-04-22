@@ -1047,6 +1047,7 @@ function renderMatches() {
           </div>
         </div>
         <div style="margin-top:14px;text-align:right;">
+          ${state.admin.loggedIn ? `<button class="match-card-cancel" onclick="cancelMatch('${m.id}')">ยกเลิกแมตช์</button>` : ''}
           <button class="match-card-finish" onclick="finishMatch('${m.id}')">จบแมตช์เลย</button>
         </div>
       </div>
@@ -1327,6 +1328,7 @@ function renderAdmin() {
     dash.style.display = 'block';
     renderAdminStats();
     renderAdminTable();
+    renderAdminMatches();
   } else {
     login.style.display = 'flex';
     dash.style.display = 'none';
@@ -1471,6 +1473,79 @@ function updateStatus(id, status) {
   toast('success', 'อัปเดตแล้ว', `${id} · ${msg[status] || 'อัปเดตสถานะ'}`);
 }
 
+function cancelMatch(id) {
+  const m = state.matches.find(x => x.id === id);
+  if (!m) return;
+  m.finished = true;
+  m.endedAt = Date.now();
+  m.cancelled = true;
+  saveData();
+  renderAdminMatches();
+  renderAdminStats();
+  toast('success', 'ยกเลิกแมตช์แล้ว', `${m.id} · ผู้เล่นสามารถเข้าคิวใหม่ได้`);
+}
+
+function renderAdminMatches() {
+  const wrap = document.getElementById('adminMatches');
+  if (!wrap) return;
+  const active = state.matches.filter(m => !m.finished);
+
+  if (active.length === 0) {
+    wrap.innerHTML = `
+      <div class="admin-match-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/></svg>
+        <div>ไม่มีแมตช์กำลังเล่นอยู่</div>
+        <small>เมื่อมีผู้เล่นเข้าคิวพอ ระบบจะจับคู่อัตโนมัติ</small>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = active.map(m => {
+    const remaining = Math.max(0, Math.floor((m.endsAt - Date.now()) / 1000));
+    const modeLabel = m.mode === 'single' ? '1v1' : '2v2';
+    return `
+      <div class="match-card">
+        <div class="match-card-head">
+          <div class="match-card-title">
+            <span class="mc-mode">${modeLabel}</span>
+            ระดับ ${m.level}${m.court ? ' · คอร์ท ' + m.court : ''}
+          </div>
+          <div class="match-card-timer">${fmtMMSS(remaining)}</div>
+        </div>
+        <div class="match-teams">
+          <div class="match-team left">
+            ${m.team1.map(p => `
+              <div class="match-player">
+                <div class="mp-avatar">
+                  ${initials(p.name)}
+                  <span class="lv-dot" data-lv="${p.level}">${p.level}</span>
+                </div>
+                <div class="mp-name">${p.name}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="match-vs">VS</div>
+          <div class="match-team right">
+            ${m.team2.map(p => `
+              <div class="match-player">
+                <div class="mp-avatar">
+                  ${initials(p.name)}
+                  <span class="lv-dot" data-lv="${p.level}">${p.level}</span>
+                </div>
+                <div class="mp-name">${p.name}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="match-card-actions">
+          <button class="match-card-cancel" onclick="cancelMatch('${m.id}')">ยกเลิกแมตช์</button>
+          <button class="match-card-finish" onclick="finishMatch('${m.id}');renderAdminMatches();renderAdminStats();">จบแมตช์เลย</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // ===== INIT =====
 function init() {
   loadData();
@@ -1602,6 +1677,7 @@ function init() {
 window.updateStatus = updateStatus;
 window.leaveQueue = leaveQueue;
 window.finishMatch = finishMatch;
+window.cancelMatch = cancelMatch;
 window.toggleBookingDetail = toggleBookingDetail;
 window.toggleAdminDetail = toggleAdminDetail;
 window.changeQty = changeQty;
