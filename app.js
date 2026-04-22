@@ -16,10 +16,10 @@ const CONFIG = {
   storageKey: 'shuttle_club_v2',
   matchDuration: 15 * 60,  // 15 minutes in seconds
   skillLevels: {
-    BG: { name: 'Beginner',    desc: 'เริ่มเล่นใหม่ๆ 0–1 ปี ยังไม่ชำนาญเทคนิค' },
-    M:  { name: 'Medium',      desc: 'เล่นประจำ 1–3 ปี ตีได้ทุกพื้นฐาน' },
-    P:  { name: 'Pro',         desc: 'เล่นแข่งระดับท้องถิ่น มีเทคนิคครบ' },
-    S:  { name: 'Super Pro',   desc: 'ระดับทัวร์นาเมนต์จังหวัด/ประเทศ' },
+    BG: { name: 'Beginner', desc: 'เริ่มเล่นใหม่ๆ 0–1 ปี ยังไม่ชำนาญเทคนิค' },
+    M: { name: 'Medium', desc: 'เล่นประจำ 1–3 ปี ตีได้ทุกพื้นฐาน' },
+    P: { name: 'Pro', desc: 'เล่นแข่งระดับท้องถิ่น มีเทคนิคครบ' },
+    S: { name: 'Super Pro', desc: 'ระดับทัวร์นาเมนต์จังหวัด/ประเทศ' },
   },
 };
 
@@ -82,7 +82,7 @@ function loadUserSession() {
         state.user = data;
       }
     }
-  } catch {}
+  } catch { }
 }
 
 function seedBookings() {
@@ -90,12 +90,12 @@ function seedBookings() {
   const fmt = (d) => d.toISOString().slice(0, 10);
   const demo = [];
   const ex = [
-    { d: 0, slots: [{c:1,h:18},{c:1,h:19}], name:'ภาณุศักดิ์ ศรีสุวรรณ', phone:'0812345678', status:'confirmed' },
-    { d: 0, slots: [{c:3,h:19},{c:3,h:20}], name:'ปรียา แสงจันทร์', phone:'0898765432', status:'confirmed' },
-    { d: 0, slots: [{c:5,h:20}], name:'ธีรพงษ์ วงศ์ประเสริฐ', phone:'0811111111', status:'confirmed' },
-    { d: 1, slots: [{c:2,h:17},{c:2,h:18}], name:'สุภาพร เจริญสุข', phone:'0822222222', status:'confirmed' },
-    { d: 1, slots: [{c:7,h:18}], name:'ชนาธิป บุญมาก', phone:'0833333333', status:'confirmed' },
-    { d: 2, slots: [{c:4,h:19},{c:4,h:20},{c:4,h:21}], name:'วรรณา สิริธรรม', phone:'0844444444', status:'confirmed' },
+    { d: 0, slots: [{ c: 1, h: 18 }, { c: 1, h: 19 }], name: 'ภาณุศักดิ์ ศรีสุวรรณ', phone: '0812345678', status: 'confirmed' },
+    { d: 0, slots: [{ c: 3, h: 19 }, { c: 3, h: 20 }], name: 'ปรียา แสงจันทร์', phone: '0898765432', status: 'confirmed' },
+    { d: 0, slots: [{ c: 5, h: 20 }], name: 'ธีรพงษ์ วงศ์ประเสริฐ', phone: '0811111111', status: 'confirmed' },
+    { d: 1, slots: [{ c: 2, h: 17 }, { c: 2, h: 18 }], name: 'สุภาพร เจริญสุข', phone: '0822222222', status: 'confirmed' },
+    { d: 1, slots: [{ c: 7, h: 18 }], name: 'ชนาธิป บุญมาก', phone: '0833333333', status: 'confirmed' },
+    { d: 2, slots: [{ c: 4, h: 19 }, { c: 4, h: 20 }, { c: 4, h: 21 }], name: 'วรรณา สิริธรรม', phone: '0844444444', status: 'confirmed' },
   ];
   ex.forEach((e, i) => {
     const date = new Date(today);
@@ -116,40 +116,40 @@ function seedBookings() {
 function seedQueue() {
   const now = Date.now();
   return [
-    { id:'Q'+(now-60000), name:'พีรพัฒน์',  phone:'0812223344', level:'M',  mode:'single', joinedAt: now-60000*5 },
-    { id:'Q'+(now-50000), name:'จิราภรณ์',  phone:'0822334455', level:'M',  mode:'single', joinedAt: now-60000*4 },
-    { id:'Q'+(now-40000), name:'กิตติพงษ์', phone:'0833445566', level:'P',  mode:'double', joinedAt: now-60000*3 },
-    { id:'Q'+(now-30000), name:'สายฝน',    phone:'0844556677', level:'BG', mode:'double', joinedAt: now-60000*2 },
-    { id:'Q'+(now-20000), name:'อนุชา',    phone:'0855667788', level:'P',  mode:'double', joinedAt: now-60000 },
+    { id: 'Q' + (now - 60000), name: 'พีรพัฒน์', phone: '0812223344', level: 'M', mode: 'single', joinedAt: now - 60000 * 5 },
+    { id: 'Q' + (now - 50000), name: 'จิราภรณ์', phone: '0822334455', level: 'M', mode: 'single', joinedAt: now - 60000 * 4 },
+    { id: 'Q' + (now - 40000), name: 'กิตติพงษ์', phone: '0833445566', level: 'P', mode: 'double', joinedAt: now - 60000 * 3 },
+    { id: 'Q' + (now - 30000), name: 'สายฝน', phone: '0844556677', level: 'BG', mode: 'double', joinedAt: now - 60000 * 2 },
+    { id: 'Q' + (now - 20000), name: 'อนุชา', phone: '0855667788', level: 'P', mode: 'double', joinedAt: now - 60000 },
   ];
 }
 
 // ===== UTILITIES =====
 function fmtDate(dateStr) {
   const d = new Date(dateStr);
-  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+  const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
   return `วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
-function fmtHour(h) { return String(h).padStart(2,'0') + ':00'; }
-function fmtSlot(hour) { return `${fmtHour(hour)}–${fmtHour(hour+1)}`; }
-function todayStr() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
-function genId(prefix='BK') { return prefix + String(Date.now()).slice(-7); }
+function fmtHour(h) { return String(h).padStart(2, '0') + ':00'; }
+function fmtSlot(hour) { return `${fmtHour(hour)}–${fmtHour(hour + 1)}`; }
+function todayStr() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }
+function genId(prefix = 'BK') { return prefix + String(Date.now()).slice(-7); }
 function fmtMMSS(sec) {
   if (sec < 0) sec = 0;
-  const m = Math.floor(sec/60), s = sec%60;
-  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 function fmtAgo(ms) {
-  const s = Math.floor((Date.now() - ms)/1000);
+  const s = Math.floor((Date.now() - ms) / 1000);
   if (s < 60) return `${s} วิ`;
-  if (s < 3600) return `${Math.floor(s/60)} นาที`;
-  return `${Math.floor(s/3600)} ชม.`;
+  if (s < 3600) return `${Math.floor(s / 60)} นาที`;
+  return `${Math.floor(s / 3600)} ชม.`;
 }
 function initials(name) {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return (parts[0].slice(0,2) || '?').toUpperCase();
+  return (parts[0].slice(0, 2) || '?').toUpperCase();
 }
 
 // ===== PAGE DETECTION =====
@@ -187,13 +187,13 @@ function goTo(page) {
 // ===== BOOKING — DATE SCROLL =====
 function renderDateScroll() {
   const scroll = document.getElementById('dateScroll');
-  const days = ['อา','จ','อ','พ','พฤ','ศ','ส'];
-  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
   scroll.innerHTML = '';
   for (let i = 0; i < 14; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const chip = document.createElement('div');
     // Fix: use direct comparison without extra spaces
     chip.className = (iso === state.selectedDate) ? 'date-chip active' : 'date-chip';
@@ -243,7 +243,7 @@ function renderTable() {
       let cls = 'slot';
       if (booked) cls += ' booked';
       else if (selected) cls += ' selected';
-      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${booked?'disabled':''}></button></td>`;
+      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${booked ? 'disabled' : ''}></button></td>`;
     }
     html += '</tr>';
   }
@@ -282,7 +282,7 @@ function updateSummary() {
   }
   bar.classList.add('visible');
   btn.disabled = false;
-  const sorted = [...state.selectedSlots].sort((a,b) => a.court - b.court || a.hour - b.hour);
+  const sorted = [...state.selectedSlots].sort((a, b) => a.court - b.court || a.hour - b.hour);
   list.textContent = sorted.map(s => `คอร์ท${s.court}·${fmtSlot(s.hour)}`).join('  ·  ');
   const courtTotal = state.selectedSlots.reduce((sum, s) => sum + s.price, 0);
   let addonTotal = 0;
@@ -322,8 +322,8 @@ function updateModalSummary() {
   const checkShuttlecock = document.getElementById('checkShuttlecock');
   const shuttlecockQty = parseInt(document.getElementById('shuttlecockQty').value) || 0;
   const sum = document.getElementById('modalSummary');
-  const courtTotal = state.selectedSlots.reduce((s,x) => s + x.price, 0);
-  const sorted = [...state.selectedSlots].sort((a,b) => a.court - b.court || a.hour - b.hour);
+  const courtTotal = state.selectedSlots.reduce((s, x) => s + x.price, 0);
+  const sorted = [...state.selectedSlots].sort((a, b) => a.court - b.court || a.hour - b.hour);
 
   let addonTotal = 0;
   let addonHtml = '';
@@ -671,7 +671,7 @@ function downloadBookingImage(booking) {
   sectionLabel('รายละเอียดการจอง');
   infoRow('วันที่', fmtDate(booking.date), 0);
   const created = new Date(booking.createdAt);
-  const createdStr = `${created.getDate()}/${created.getMonth()+1}/${created.getFullYear()+543} ${String(created.getHours()).padStart(2,'0')}:${String(created.getMinutes()).padStart(2,'0')}`;
+  const createdStr = `${created.getDate()}/${created.getMonth() + 1}/${created.getFullYear() + 543} ${String(created.getHours()).padStart(2, '0')}:${String(created.getMinutes()).padStart(2, '0')}`;
   infoRow('จองเมื่อ', createdStr, 1);
   y += 28;
 
@@ -858,7 +858,7 @@ function joinQueue(e) {
   document.getElementById('mmPhone').value = '';
   state.mmForm = { level: null, mode: null };
 
-  toast('success', 'เข้าคิวแล้ว', `${name} · ระดับ ${level} · ${mode==='single'?'1v1':'2v2'}`);
+  toast('success', 'เข้าคิวแล้ว', `${name} · ระดับ ${level} · ${mode === 'single' ? '1v1' : '2v2'}`);
 
   // Try to match
   tryMatch();
@@ -882,7 +882,7 @@ function tryMatch() {
     // Singles: need 2 players
     const singles = state.queue
       .filter(q => q.level === lv && q.mode === 'single')
-      .sort((a,b) => a.joinedAt - b.joinedAt);
+      .sort((a, b) => a.joinedAt - b.joinedAt);
     while (singles.length >= 2) {
       const p1 = singles.shift();
       const p2 = singles.shift();
@@ -893,7 +893,7 @@ function tryMatch() {
     // Doubles: need 4 players (2v2)
     const doubles = state.queue
       .filter(q => q.level === lv && q.mode === 'double')
-      .sort((a,b) => a.joinedAt - b.joinedAt);
+      .sort((a, b) => a.joinedAt - b.joinedAt);
     while (doubles.length >= 4) {
       const team1 = [doubles.shift(), doubles.shift()];
       const team2 = [doubles.shift(), doubles.shift()];
@@ -929,9 +929,9 @@ function createMatch(team1, team2, mode, level) {
   const match = {
     id: genId('MT'),
     mode, level, court,
-    team1: team1.map(p => ({ id:p.id, name:p.name, phone:p.phone, level:p.level })),
-    team2: team2.map(p => ({ id:p.id, name:p.name, phone:p.phone, level:p.level })),
-    players: [...team1, ...team2].map(p => ({ name:p.name, phone:p.phone })),
+    team1: team1.map(p => ({ id: p.id, name: p.name, phone: p.phone, level: p.level })),
+    team2: team2.map(p => ({ id: p.id, name: p.name, phone: p.phone, level: p.level })),
+    players: [...team1, ...team2].map(p => ({ name: p.name, phone: p.phone })),
     startedAt: Date.now(),
     endsAt: Date.now() + CONFIG.matchDuration * 1000,
     finished: false,
@@ -939,7 +939,7 @@ function createMatch(team1, team2, mode, level) {
   state.matches.push(match);
 }
 
-function finishMatch(id, auto=false) {
+function finishMatch(id, auto = false) {
   const m = state.matches.find(x => x.id === id);
   if (!m) return;
   m.finished = true;
@@ -957,11 +957,11 @@ function renderQueue() {
     b.onclick = () => { state.queueFilter = b.dataset.f; renderQueue(); };
   });
 
-  let list = [...state.queue].sort((a,b) => a.joinedAt - b.joinedAt);
+  let list = [...state.queue].sort((a, b) => a.joinedAt - b.joinedAt);
   if (state.queueFilter !== 'all') list = list.filter(q => q.level === state.queueFilter);
 
   if (list.length === 0) {
-    wrap.innerHTML = `<div class="empty-mm">ยังไม่มีผู้เล่นในคิว ${state.queueFilter==='all'?'':'ระดับ '+state.queueFilter} · เข้าคิวเลย!</div>`;
+    wrap.innerHTML = `<div class="empty-mm">ยังไม่มีผู้เล่นในคิว ${state.queueFilter === 'all' ? '' : 'ระดับ ' + state.queueFilter} · เข้าคิวเลย!</div>`;
     return;
   }
 
@@ -999,7 +999,7 @@ function renderMatches() {
   }
 
   wrap.innerHTML = `<div class="match-list">` + active.map(m => {
-    const remaining = Math.floor((m.endsAt - Date.now())/1000);
+    const remaining = Math.floor((m.endsAt - Date.now()) / 1000);
     const modeLabel = m.mode === 'single' ? '1v1' : '2v2';
     return `
       <div class="match-card" id="match-${m.id}">
@@ -1053,7 +1053,7 @@ function tickMatches() {
   timers.forEach(el => {
     const endsAt = parseInt(el.dataset.ends);
     const id = el.dataset.id;
-    const remaining = Math.floor((endsAt - Date.now())/1000);
+    const remaining = Math.floor((endsAt - Date.now()) / 1000);
 
     if (remaining <= 0) {
       el.classList.add('done');
@@ -1086,7 +1086,7 @@ function renderUser() {
     // Show user info
     const latestBooking = state.bookings
       .filter(b => b.phone === state.user.phone)
-      .sort((a,b) => b.createdAt - a.createdAt)[0];
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
     const displayName = latestBooking ? latestBooking.name : 'ผู้ใช้';
     document.getElementById('userAvatar').textContent = initials(displayName);
     document.getElementById('userName').textContent = displayName;
@@ -1113,7 +1113,7 @@ function tryUserLogin() {
   // Find name from latest booking
   const latestBooking = state.bookings
     .filter(b => b.phone === phone)
-    .sort((a,b) => b.createdAt - a.createdAt)[0];
+    .sort((a, b) => b.createdAt - a.createdAt)[0];
   state.user.name = latestBooking ? latestBooking.name : 'ผู้ใช้';
   saveData();
   renderUser();
@@ -1133,7 +1133,7 @@ function renderUserBookings() {
 
   const list = state.bookings
     .filter(b => b.phone === state.user.phone)
-    .sort((a,b) => b.createdAt - a.createdAt);
+    .sort((a, b) => b.createdAt - a.createdAt);
 
   if (list.length === 0) {
     wrap.innerHTML = `<div class="empty-state"><div class="empty-ico"><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14 2 14 8 20 8'/><line x1='16' y1='13' x2='8' y2='13'/><line x1='16' y1='17' x2='8' y2='17'/></svg></div><p>ยังไม่มีประวัติการจอง — <a href="booking.html" style="color:var(--red);font-weight:600">จองคอร์ทเลย</a></p></div>`;
@@ -1144,15 +1144,15 @@ function renderUserBookings() {
 
   wrap.innerHTML = `<div class="booking-list">` + list.map(b => {
     const slotsStr = b.slots
-      .sort((a,b) => a.court - b.court || a.hour - b.hour)
+      .sort((a, b) => a.court - b.court || a.hour - b.hour)
       .map(s => `คอร์ท${s.court} · ${fmtSlot(s.hour)}`)
       .join(', ');
     const slotsDetail = b.slots
-      .sort((a,b) => a.court - b.court || a.hour - b.hour)
+      .sort((a, b) => a.court - b.court || a.hour - b.hour)
       .map(s => `<div class="detail-slot-row"><span>คอร์ท ${s.court} · ${fmtSlot(s.hour)}</span><span>฿${s.price}</span></div>`)
       .join('');
     const createdAt = new Date(b.createdAt);
-    const createdStr = `${createdAt.getDate()}/${createdAt.getMonth()+1}/${createdAt.getFullYear()+543} ${String(createdAt.getHours()).padStart(2,'0')}:${String(createdAt.getMinutes()).padStart(2,'0')}`;
+    const createdStr = `${createdAt.getDate()}/${createdAt.getMonth() + 1}/${createdAt.getFullYear() + 543} ${String(createdAt.getHours()).padStart(2, '0')}:${String(createdAt.getMinutes()).padStart(2, '0')}`;
     return `
       <div class="booking-item" onclick="toggleBookingDetail('${b.id}')">
         <div>
@@ -1175,10 +1175,10 @@ function renderUserBookings() {
               <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px;">
                 <div style="font-size:12px;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px;font-weight:700;">เช่า/ซื้อเพิ่มเติม</div>
                 ${b.addons.map(a => {
-                  if (a.type === 'racket') return `<div class="detail-slot-row"><span>เช่าไม้แบด ${a.qty} อัน</span><span>฿${a.price}</span></div>`;
-                  if (a.type === 'shuttlecock') return `<div class="detail-slot-row"><span>ซื้อลูกแบด ${a.balls} ลูก</span><span>฿${a.price}</span></div>`;
-                  return `<div class="detail-slot-row"><span>${a.type}</span><span>฿${a.price}</span></div>`;
-                }).join('')}
+      if (a.type === 'racket') return `<div class="detail-slot-row"><span>เช่าไม้แบด ${a.qty} อัน</span><span>฿${a.price}</span></div>`;
+      if (a.type === 'shuttlecock') return `<div class="detail-slot-row"><span>ซื้อลูกแบด ${a.balls} ลูก</span><span>฿${a.price}</span></div>`;
+      return `<div class="detail-slot-row"><span>${a.type}</span><span>฿${a.price}</span></div>`;
+    }).join('')}
               </div>
             ` : ''}
             <div class="detail-slot-row total"><span>ยอดรวม</span><span>฿${b.total.toLocaleString()}</span></div>
@@ -1213,7 +1213,7 @@ function searchHistory() {
   }
   const list = state.bookings
     .filter(b => b.phone === phone)
-    .sort((a,b) => b.createdAt - a.createdAt);
+    .sort((a, b) => b.createdAt - a.createdAt);
 
   if (list.length === 0) {
     result.innerHTML = `<div class="empty-state"><div class="empty-ico"><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg></div><p>ไม่พบประวัติการจองสำหรับเบอร์ ${phone}</p></div>`;
@@ -1224,15 +1224,15 @@ function searchHistory() {
 
   result.innerHTML = `<div class="booking-list">` + list.map(b => {
     const slotsStr = b.slots
-      .sort((a,b) => a.court - b.court || a.hour - b.hour)
+      .sort((a, b) => a.court - b.court || a.hour - b.hour)
       .map(s => `คอร์ท${s.court} · ${fmtSlot(s.hour)}`)
       .join(', ');
     const slotsDetail = b.slots
-      .sort((a,b) => a.court - b.court || a.hour - b.hour)
+      .sort((a, b) => a.court - b.court || a.hour - b.hour)
       .map(s => `<div class="detail-slot-row"><span>คอร์ท ${s.court} · ${fmtSlot(s.hour)}</span><span>฿${s.price}</span></div>`)
       .join('');
     const createdAt = new Date(b.createdAt);
-    const createdStr = `${createdAt.getDate()}/${createdAt.getMonth()+1}/${createdAt.getFullYear()+543} ${String(createdAt.getHours()).padStart(2,'0')}:${String(createdAt.getMinutes()).padStart(2,'0')}`;
+    const createdStr = `${createdAt.getDate()}/${createdAt.getMonth() + 1}/${createdAt.getFullYear() + 543} ${String(createdAt.getHours()).padStart(2, '0')}:${String(createdAt.getMinutes()).padStart(2, '0')}`;
     return `
       <div class="booking-item" onclick="toggleBookingDetail('${b.id}')">
         <div>
@@ -1342,7 +1342,7 @@ function renderAdminStats() {
   const pending = state.bookings.filter(b => b.status === 'pending').length;
   const totalRevenue = state.bookings
     .filter(b => b.status === 'confirmed')
-    .reduce((s,b) => s + b.total, 0);
+    .reduce((s, b) => s + b.total, 0);
   const activeMatches = state.matches.filter(m => !m.finished).length;
 
   wrap.innerHTML = `
@@ -1366,7 +1366,7 @@ function renderAdminTable() {
   const q = document.getElementById('adminFilter').value.toLowerCase().trim();
   const statusFilter = document.getElementById('adminStatusFilter').value;
 
-  let list = [...state.bookings].sort((a,b) => b.createdAt - a.createdAt);
+  let list = [...state.bookings].sort((a, b) => b.createdAt - a.createdAt);
   if (statusFilter !== 'all') list = list.filter(b => b.status === statusFilter);
   if (q) {
     list = list.filter(b =>
@@ -1385,17 +1385,17 @@ function renderAdminTable() {
 
   tbody.innerHTML = list.map(b => {
     const slotsStr = b.slots
-      .sort((a,b) => a.court - b.court || a.hour - b.hour)
+      .sort((a, b) => a.court - b.court || a.hour - b.hour)
       .map(s => `ค.${s.court}·${fmtHour(s.hour)}`)
       .join(', ');
 
     const slotsDetail = b.slots
-      .sort((a,b) => a.court - b.court || a.hour - b.hour)
+      .sort((a, b) => a.court - b.court || a.hour - b.hour)
       .map(s => `<div class="detail-slot-row"><span>คอร์ท ${s.court} · ${fmtSlot(s.hour)}</span><span>฿${s.price}</span></div>`)
       .join('');
 
     const createdAt = new Date(b.createdAt);
-    const createdStr = `${createdAt.getDate()}/${createdAt.getMonth()+1}/${createdAt.getFullYear()+543} ${String(createdAt.getHours()).padStart(2,'0')}:${String(createdAt.getMinutes()).padStart(2,'0')}`;
+    const createdStr = `${createdAt.getDate()}/${createdAt.getMonth() + 1}/${createdAt.getFullYear() + 543} ${String(createdAt.getHours()).padStart(2, '0')}:${String(createdAt.getMinutes()).padStart(2, '0')}`;
 
     let actions = '';
     if (b.status === 'cancelled') {
@@ -1405,7 +1405,7 @@ function renderAdminTable() {
     }
 
     const d = new Date(b.date);
-    const shortDate = `${d.getDate()}/${d.getMonth()+1}`;
+    const shortDate = `${d.getDate()}/${d.getMonth() + 1}`;
 
     return `
       <tr class="admin-row" onclick="toggleAdminDetail('${b.id}')" style="cursor:pointer">
@@ -1425,10 +1425,10 @@ function renderAdminTable() {
               <div class="detail-label">รายละเอียดคอร์ทจอง</div>
               ${slotsDetail}
               ${b.addons && b.addons.length ? b.addons.map(a => {
-                if (a.type === 'racket') return `<div class="detail-slot-row"><span>เช่าไม้แบด ${a.qty} อัน</span><span>฿${a.price}</span></div>`;
-                if (a.type === 'shuttlecock') return `<div class="detail-slot-row"><span>ซื้อลูกแบด ${a.balls} ลูก</span><span>฿${a.price}</span></div>`;
-                return `<div class="detail-slot-row"><span>${a.type}</span><span>฿${a.price}</span></div>`;
-              }).join('') : '<div class="detail-slot-row"><span style="color:var(--ink-3)">ไม้แบด/ลูกแบด: ไม่ได้เช่า</span><span></span></div>'}
+      if (a.type === 'racket') return `<div class="detail-slot-row"><span>เช่าไม้แบด ${a.qty} อัน</span><span>฿${a.price}</span></div>`;
+      if (a.type === 'shuttlecock') return `<div class="detail-slot-row"><span>ซื้อลูกแบด ${a.balls} ลูก</span><span>฿${a.price}</span></div>`;
+      return `<div class="detail-slot-row"><span>${a.type}</span><span>฿${a.price}</span></div>`;
+    }).join('') : '<div class="detail-slot-row"><span style="color:var(--ink-3)">ไม้แบด/ลูกแบด: ไม่ได้เช่า</span><span></span></div>'}
               <div class="detail-slot-row total"><span>ยอดรวม</span><span>฿${b.total.toLocaleString()}</span></div>
             </div>
             <div class="admin-detail-col">
