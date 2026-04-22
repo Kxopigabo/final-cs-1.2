@@ -259,7 +259,7 @@ function renderTable() {
   html += '</tbody>';
   table.innerHTML = html;
 
-  table.querySelectorAll('.slot:not(.booked)').forEach(btn => {
+  table.querySelectorAll('.slot:not(.booked):not(.past)').forEach(btn => {
     btn.onclick = () => toggleSlot(parseInt(btn.dataset.court), parseInt(btn.dataset.hour), parseInt(btn.dataset.price));
   });
 }
