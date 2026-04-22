@@ -223,7 +223,15 @@ function isSlotBooked(date, court, hour) {
   );
 }
 function isSlotPast(date, hour) {
-  // Always return false to allow booking all slots
+  const now = new Date();
+  const today = todayStr();
+  // Only check time for today's date
+  if (date === today) {
+    const [y, m, d] = date.split('-').map(Number);
+    const slotStart = new Date(y, m - 1, d, hour, 0, 0);
+    return slotStart <= now;
+  }
+  // Future dates: never past
   return false;
 }
 
@@ -237,13 +245,14 @@ function renderTable() {
     const price = CONFIG.pricing(h);
     html += `<tr><td class="time-cell">${fmtSlot(h)}</td>`;
     for (let c = 1; c <= CONFIG.courts; c++) {
-      // Remove isSlotPast check - always allow booking
+      const past = isSlotPast(state.selectedDate, h);
       const booked = isSlotBooked(state.selectedDate, c, h);
       const selected = state.selectedSlots.some(s => s.court === c && s.hour === h);
       let cls = 'slot';
-      if (booked) cls += ' booked';
+      if (past) cls += ' past';
+      else if (booked) cls += ' booked';
       else if (selected) cls += ' selected';
-      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${booked ? 'disabled' : ''}></button></td>`;
+      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${past || booked ? 'disabled' : ''}></button></td>`;
     }
     html += '</tr>';
   }
