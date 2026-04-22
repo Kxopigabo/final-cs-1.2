@@ -36,6 +36,7 @@ const state = {
   mmForm: { level: null, mode: null },
   queueFilter: 'all',
   selfQueueId: null, // tracks current user's position in queue
+  closedCourts: [],  // courts under maintenance
 };
 
 // ===== STORAGE =====
@@ -47,16 +48,19 @@ function loadData() {
       state.bookings = data.bookings || [];
       state.queue = data.queue || [];
       state.matches = data.matches || [];
+      state.closedCourts = data.closedCourts || [];
     } else {
       state.bookings = seedBookings();
       state.queue = seedQueue();
       state.matches = [];
+      state.closedCourts = [];
       saveData();
     }
   } catch {
     state.bookings = [];
     state.queue = [];
     state.matches = [];
+    state.closedCourts = [];
   }
 }
 function saveData() {
@@ -64,6 +68,7 @@ function saveData() {
     bookings: state.bookings,
     queue: state.queue,
     matches: state.matches,
+    closedCourts: state.closedCourts,
   }));
   // Save user session separately so it persists across pages
   if (state.user.loggedIn) {
@@ -222,35 +227,53 @@ function isSlotBooked(date, court, hour) {
     b.slots.some(s => s.court === court && s.hour === hour)
   );
 }
+
+function isCourtClosed(court) {
+  return state.closedCourts.includes(court);
+}
 function isSlotPast(date, hour) {
-  // Always return false to allow booking all slots
+  const now = new Date();
+  const today = todayStr();
+  // Only check time for today's date
+  if (date === today) {
+    const [y, m, d] = date.split('-').map(Number);
+    const slotStart = new Date(y, m - 1, d, hour, 0, 0);
+    return slotStart <= now;
+  }
+  // Future dates: never past
   return false;
 }
 
 function renderTable() {
   const table = document.getElementById('bookingTable');
   let html = '<thead><tr><th>เวลา</th>';
-  for (let c = 1; c <= CONFIG.courts; c++) html += `<th>คอร์ท ${c}</th>`;
+  for (let c = 1; c <= CONFIG.courts; c++) {
+    const closed = isCourtClosed(c);
+    html += `<th>${closed ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>' : ''}คอร์ท ${c}</th>`;
+  }
   html += '</tr></thead><tbody>';
 
   for (let h = CONFIG.openHour; h < CONFIG.closeHour; h++) {
     const price = CONFIG.pricing(h);
     html += `<tr><td class="time-cell">${fmtSlot(h)}</td>`;
     for (let c = 1; c <= CONFIG.courts; c++) {
-      // Remove isSlotPast check - always allow booking
+      const past = isSlotPast(state.selectedDate, h);
       const booked = isSlotBooked(state.selectedDate, c, h);
+      const closed = isCourtClosed(c);
       const selected = state.selectedSlots.some(s => s.court === c && s.hour === h);
       let cls = 'slot';
-      if (booked) cls += ' booked';
+      if (past) cls += ' past';
+      else if (closed) cls += ' closed';
+      else if (booked) cls += ' booked';
       else if (selected) cls += ' selected';
-      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${booked ? 'disabled' : ''}></button></td>`;
+      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${past || booked || closed ? 'disabled' : ''}></button></td>`;
     }
     html += '</tr>';
   }
   html += '</tbody>';
   table.innerHTML = html;
 
-  table.querySelectorAll('.slot:not(.booked)').forEach(btn => {
+  table.querySelectorAll('.slot:not(.booked):not(.past):not(.closed)').forEach(btn => {
     btn.onclick = () => toggleSlot(parseInt(btn.dataset.court), parseInt(btn.dataset.hour), parseInt(btn.dataset.price));
   });
 }
@@ -784,6 +807,7 @@ function renderMatchMaking() {
 
 function renderSkillTiers() {
   const wrap = document.getElementById('skillTiers');
+  if (!wrap) return;
   const levels = ['BG', 'M', 'P', 'S'];
   wrap.innerHTML = levels.map(lv => {
     const count = state.queue.filter(q => q.level === lv).length;
@@ -945,7 +969,9 @@ function finishMatch(id, auto = false) {
   m.finished = true;
   m.endedAt = Date.now();
   saveData();
-  renderMatchMaking();
+  if (state.currentPage === 'matchmaking') {
+    renderMatchMaking();
+  }
   if (!auto) toast('success', 'จบแมตช์', 'ผู้เล่นสามารถเข้าคิวใหม่ได้');
 }
 
@@ -1038,6 +1064,7 @@ function renderMatches() {
           </div>
         </div>
         <div style="margin-top:14px;text-align:right;">
+          ${state.admin.loggedIn ? `<button class="match-card-cancel" onclick="cancelMatch('${m.id}')">ยกเลิกแมตช์</button>` : ''}
           <button class="match-card-finish" onclick="finishMatch('${m.id}')">จบแมตช์เลย</button>
         </div>
       </div>
@@ -1316,12 +1343,87 @@ function renderAdmin() {
   if (state.admin.loggedIn) {
     login.style.display = 'none';
     dash.style.display = 'block';
+    renderCourtMgmt();
     renderAdminStats();
+    renderAdminMatches();
+    renderQueueManagement();
     renderAdminTable();
   } else {
     login.style.display = 'flex';
     dash.style.display = 'none';
   }
+}
+
+function renderCourtMgmt() {
+  const grid = document.getElementById('courtMgmtGrid');
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+  for (let c = 1; c <= CONFIG.courts; c++) {
+    const isClosed = state.closedCourts.includes(c);
+    const div = document.createElement('div');
+    div.className = `court-check${isClosed ? ' checked' : ''}`;
+    div.innerHTML = `
+      <input type="checkbox" ${isClosed ? 'checked' : ''} data-court="${c}">
+      <span class="court-check-label">คอร์ท ${c}</span>
+    `;
+    div.onclick = (e) => {
+      if (e.target.type === 'checkbox') return;
+      const checkbox = div.querySelector('input');
+      checkbox.checked = !checkbox.checked;
+      div.classList.toggle('checked', checkbox.checked);
+    };
+    div.querySelector('input').onclick = (e) => {
+      e.stopPropagation();
+      div.classList.toggle('checked', e.target.checked);
+    };
+    grid.appendChild(div);
+  }
+}
+
+function saveCourts() {
+  const checkboxes = document.querySelectorAll('#courtMgmtGrid input[type="checkbox"]');
+  const closed = [];
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      closed.push(parseInt(cb.dataset.court));
+    }
+  });
+  state.closedCourts = closed;
+  saveData();
+  toast('success', 'บันทึกเรียบร้อย', `ปิดปรับปรุง ${closed.length} คอร์ท`);
+  renderTable();
+}
+
+function renderQueueManagement() {
+  const wrap = document.getElementById('queueList');
+  if (!wrap) return;
+
+  if (state.queue.length === 0) {
+    wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink-3);font-size:13px;">ไม่มีผู้รอจับคู่</div>';
+    return;
+  }
+
+  wrap.innerHTML = state.queue.map(q => {
+    const modeLabel = q.mode === 'single' ? '1v1' : '2v2';
+    return `
+      <div class="queue-item">
+        <div class="queue-item-info">
+          <div class="queue-item-name">${q.name} <span class="queue-item-badge">${q.level}</span></div>
+          <div class="queue-item-details">${q.phone} · ${modeLabel} · เข้าคิวเมื่อ ${new Date(q.joinedAt).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</div>
+        </div>
+        <button class="btn btn-secondary" style="padding:8px 16px;font-size:12px;" onclick="removeQueue('${q.id}')">ลบ</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function removeQueue(id) {
+  state.queue = state.queue.filter(q => q.id !== id);
+  if (state.selfQueueId === id) state.selfQueueId = null;
+  saveData();
+  renderQueueManagement();
+  toast('success', 'ลบคิวแล้ว', 'ผู้รอจับคู่ถูกลบออกจากระบบ');
 }
 
 function tryLogin() {
@@ -1462,11 +1564,151 @@ function updateStatus(id, status) {
   toast('success', 'อัปเดตแล้ว', `${id} · ${msg[status] || 'อัปเดตสถานะ'}`);
 }
 
+function cancelMatch(id) {
+  const m = state.matches.find(x => x.id === id);
+  if (!m) return;
+  m.finished = true;
+  m.endedAt = Date.now();
+  m.cancelled = true;
+  saveData();
+  renderAdminMatches();
+  renderAdminStats();
+  toast('success', 'ยกเลิกแมตช์แล้ว', `${m.id} · ผู้เล่นสามารถเข้าคิวใหม่ได้`);
+}
+
+function renderAdminMatches() {
+  const wrap = document.getElementById('adminMatches');
+  if (!wrap) return;
+  const active = state.matches.filter(m => !m.finished);
+
+  if (active.length === 0) {
+    wrap.innerHTML = `
+      <div class="admin-match-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/></svg>
+        <div>ไม่มีแมตช์กำลังเล่นอยู่</div>
+        <small>เมื่อมีผู้เล่นเข้าคิวพอ ระบบจะจับคู่อัตโนมัติ</small>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = active.map(m => {
+    const remaining = Math.max(0, Math.floor((m.endsAt - Date.now()) / 1000));
+    const modeLabel = m.mode === 'single' ? '1v1' : '2v2';
+    return `
+      <div class="match-card">
+        <div class="match-card-head">
+          <div class="match-card-title">
+            <span class="mc-mode">${modeLabel}</span>
+            ระดับ ${m.level}${m.court ? ' · คอร์ท ' + m.court : ''}
+          </div>
+          <div class="match-card-timer">${fmtMMSS(remaining)}</div>
+        </div>
+        <div class="match-teams">
+          <div class="match-team left">
+            ${m.team1.map(p => `
+              <div class="match-player">
+                <div class="mp-avatar">
+                  ${initials(p.name)}
+                  <span class="lv-dot" data-lv="${p.level}">${p.level}</span>
+                </div>
+                <div class="mp-name">${p.name}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="match-vs">VS</div>
+          <div class="match-team right">
+            ${m.team2.map(p => `
+              <div class="match-player">
+                <div class="mp-avatar">
+                  ${initials(p.name)}
+                  <span class="lv-dot" data-lv="${p.level}">${p.level}</span>
+                </div>
+                <div class="mp-name">${p.name}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="match-card-actions">
+          <button class="match-card-cancel" onclick="cancelMatch('${m.id}')">ยกเลิกแมตช์</button>
+          <button class="match-card-finish" onclick="finishMatch('${m.id}');renderAdminMatches();renderAdminStats();">จบแมตช์เลย</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // ===== INIT =====
 function init() {
   loadData();
   loadUserSession();
   state.currentPage = detectCurrentPage();
+
+  // Add CSS for queue management dynamically
+  const queueStyle = document.createElement('style');
+  queueStyle.textContent = `
+    .queue-mgmt {
+      background: #fff;
+      border: 1px solid #ececec;
+      border-radius: 4px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .queue-mgmt-title {
+      font-family: 'Bebas Neue', 'Prompt', sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+      color: #111;
+    }
+    .queue-mgmt-desc {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 24px;
+    }
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #f7f7f7;
+      border: 1px solid #ececec;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .queue-item:hover {
+      border-color: #e10028;
+    }
+    .queue-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .queue-item-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+    .queue-item-details {
+      font-size: 13px;
+      color: #555;
+    }
+    .queue-item-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #ffe5e9;
+      color: #e10028;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  `;
+  document.head.appendChild(queueStyle);
 
   // Mobile nav toggle
   const navToggle = document.getElementById('navToggle');
@@ -1585,6 +1827,7 @@ function init() {
     };
     document.getElementById('adminFilter').oninput = renderAdminTable;
     document.getElementById('adminStatusFilter').onchange = renderAdminTable;
+    document.getElementById('btnSaveCourts').onclick = saveCourts;
     renderAdmin();
   }
 }
@@ -1593,8 +1836,10 @@ function init() {
 window.updateStatus = updateStatus;
 window.leaveQueue = leaveQueue;
 window.finishMatch = finishMatch;
+window.cancelMatch = cancelMatch;
 window.toggleBookingDetail = toggleBookingDetail;
 window.toggleAdminDetail = toggleAdminDetail;
 window.changeQty = changeQty;
+window.removeQueue = removeQueue;
 
 document.addEventListener('DOMContentLoaded', init);
