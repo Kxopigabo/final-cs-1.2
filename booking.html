@@ -436,6 +436,11 @@
       opacity: 0.6;
     }
 
+    .legend-closed {
+      background: #ffed4e;
+      border-color: #fde047;
+    }
+
     .table-wrap {
       position: relative;
       background: #fff;
@@ -564,10 +569,21 @@
       opacity: 0.8;
     }
 
-    .slot.past {
-      background: #eeeeee;
+    .slot.closed {
+      background: #ffed4e;
       cursor: not-allowed;
-      opacity: 0.5;
+      color: #854d0e;
+    }
+
+    .slot.closed::after {
+      content: "ปิดปรับปรุง";
+      opacity: 0.8;
+    }
+
+    .slot.past {
+      background: #f0f0f0;
+      cursor: not-allowed;
+      color: #888;
     }
 
     .slot.past::after {
@@ -1175,6 +1191,7 @@
         <div class="legend-item"><span class="legend-box legend-available"></span>ว่าง</div>
         <div class="legend-item"><span class="legend-box legend-selected"></span>ที่คุณเลือก</div>
         <div class="legend-item"><span class="legend-box legend-booked"></span>ถูกจองแล้ว</div>
+        <div class="legend-item"><span class="legend-box legend-closed"></span>ปิดปรับปรุง</div>
       </div>
 
       <div class="table-wrap">

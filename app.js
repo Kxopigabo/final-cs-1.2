@@ -36,6 +36,7 @@ const state = {
   mmForm: { level: null, mode: null },
   queueFilter: 'all',
   selfQueueId: null, // tracks current user's position in queue
+  closedCourts: [],  // courts under maintenance
 };
 
 // ===== STORAGE =====
@@ -47,16 +48,19 @@ function loadData() {
       state.bookings = data.bookings || [];
       state.queue = data.queue || [];
       state.matches = data.matches || [];
+      state.closedCourts = data.closedCourts || [];
     } else {
       state.bookings = seedBookings();
       state.queue = seedQueue();
       state.matches = [];
+      state.closedCourts = [];
       saveData();
     }
   } catch {
     state.bookings = [];
     state.queue = [];
     state.matches = [];
+    state.closedCourts = [];
   }
 }
 function saveData() {
@@ -64,6 +68,7 @@ function saveData() {
     bookings: state.bookings,
     queue: state.queue,
     matches: state.matches,
+    closedCourts: state.closedCourts,
   }));
   // Save user session separately so it persists across pages
   if (state.user.loggedIn) {
@@ -222,6 +227,10 @@ function isSlotBooked(date, court, hour) {
     b.slots.some(s => s.court === court && s.hour === hour)
   );
 }
+
+function isCourtClosed(court) {
+  return state.closedCourts.includes(court);
+}
 function isSlotPast(date, hour) {
   const now = new Date();
   const today = todayStr();
@@ -238,7 +247,10 @@ function isSlotPast(date, hour) {
 function renderTable() {
   const table = document.getElementById('bookingTable');
   let html = '<thead><tr><th>เวลา</th>';
-  for (let c = 1; c <= CONFIG.courts; c++) html += `<th>คอร์ท ${c}</th>`;
+  for (let c = 1; c <= CONFIG.courts; c++) {
+    const closed = isCourtClosed(c);
+    html += `<th>${closed ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>' : ''}คอร์ท ${c}</th>`;
+  }
   html += '</tr></thead><tbody>';
 
   for (let h = CONFIG.openHour; h < CONFIG.closeHour; h++) {
@@ -247,19 +259,21 @@ function renderTable() {
     for (let c = 1; c <= CONFIG.courts; c++) {
       const past = isSlotPast(state.selectedDate, h);
       const booked = isSlotBooked(state.selectedDate, c, h);
+      const closed = isCourtClosed(c);
       const selected = state.selectedSlots.some(s => s.court === c && s.hour === h);
       let cls = 'slot';
       if (past) cls += ' past';
+      else if (closed) cls += ' closed';
       else if (booked) cls += ' booked';
       else if (selected) cls += ' selected';
-      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${past || booked ? 'disabled' : ''}></button></td>`;
+      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${past || booked || closed ? 'disabled' : ''}></button></td>`;
     }
     html += '</tr>';
   }
   html += '</tbody>';
   table.innerHTML = html;
 
-  table.querySelectorAll('.slot:not(.booked):not(.past)').forEach(btn => {
+  table.querySelectorAll('.slot:not(.booked):not(.past):not(.closed)').forEach(btn => {
     btn.onclick = () => toggleSlot(parseInt(btn.dataset.court), parseInt(btn.dataset.hour), parseInt(btn.dataset.price));
   });
 }
@@ -1326,6 +1340,7 @@ function renderAdmin() {
   if (state.admin.loggedIn) {
     login.style.display = 'none';
     dash.style.display = 'block';
+    renderCourtMgmt();
     renderAdminStats();
     renderAdminTable();
     renderAdminMatches();
@@ -1333,6 +1348,47 @@ function renderAdmin() {
     login.style.display = 'flex';
     dash.style.display = 'none';
   }
+}
+
+function renderCourtMgmt() {
+  const grid = document.getElementById('courtMgmtGrid');
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+  for (let c = 1; c <= CONFIG.courts; c++) {
+    const isClosed = state.closedCourts.includes(c);
+    const div = document.createElement('div');
+    div.className = `court-check${isClosed ? ' checked' : ''}`;
+    div.innerHTML = `
+      <input type="checkbox" ${isClosed ? 'checked' : ''} data-court="${c}">
+      <span class="court-check-label">คอร์ท ${c}</span>
+    `;
+    div.onclick = (e) => {
+      if (e.target.type === 'checkbox') return;
+      const checkbox = div.querySelector('input');
+      checkbox.checked = !checkbox.checked;
+      div.classList.toggle('checked', checkbox.checked);
+    };
+    div.querySelector('input').onclick = (e) => {
+      e.stopPropagation();
+      div.classList.toggle('checked', e.target.checked);
+    };
+    grid.appendChild(div);
+  }
+}
+
+function saveCourts() {
+  const checkboxes = document.querySelectorAll('#courtMgmtGrid input[type="checkbox"]');
+  const closed = [];
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      closed.push(parseInt(cb.dataset.court));
+    }
+  });
+  state.closedCourts = closed;
+  saveData();
+  toast('success', 'บันทึกเรียบร้อย', `ปิดปรับปรุง ${closed.length} คอร์ท`);
+  renderTable();
 }
 
 function tryLogin() {
@@ -1669,6 +1725,7 @@ function init() {
     };
     document.getElementById('adminFilter').oninput = renderAdminTable;
     document.getElementById('adminStatusFilter').onchange = renderAdminTable;
+    document.getElementById('btnSaveCourts').onclick = saveCourts;
     renderAdmin();
   }
 }
