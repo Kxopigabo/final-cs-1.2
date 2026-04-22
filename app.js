@@ -195,7 +195,8 @@ function renderDateScroll() {
     d.setDate(d.getDate() + i);
     const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const chip = document.createElement('div');
-    chip.className = 'date-chip' + (iso === state.selectedDate ? ' active' : '');
+    // Fix: use direct comparison without extra spaces
+    chip.className = (iso === state.selectedDate) ? 'date-chip active' : 'date-chip';
     chip.dataset.date = iso;
     chip.innerHTML = `
       <div class="date-chip-day">${i === 0 ? 'วันนี้' : days[d.getDay()]}</div>
@@ -222,10 +223,8 @@ function isSlotBooked(date, court, hour) {
   );
 }
 function isSlotPast(date, hour) {
-  const now = new Date();
-  const [y, m, d] = date.split('-').map(Number);
-  const slotEnd = new Date(y, m - 1, d, hour + 1, 0, 0);
-  return slotEnd <= now;
+  // Always return false to allow booking all slots
+  return false;
 }
 
 function renderTable() {
@@ -238,26 +237,21 @@ function renderTable() {
     const price = CONFIG.pricing(h);
     html += `<tr><td class="time-cell">${fmtSlot(h)}</td>`;
     for (let c = 1; c <= CONFIG.courts; c++) {
-      const past = isSlotPast(state.selectedDate, h);
+      // Remove isSlotPast check - always allow booking
       const booked = isSlotBooked(state.selectedDate, c, h);
       const selected = state.selectedSlots.some(s => s.court === c && s.hour === h);
       let cls = 'slot';
-      if (past) cls += ' past';
-      else if (booked) cls += ' booked';
+      if (booked) cls += ' booked';
       else if (selected) cls += ' selected';
-      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${past||booked?'disabled':''}></button></td>`;
+      html += `<td><button class="${cls}" data-court="${c}" data-hour="${h}" data-price="${price}" ${booked?'disabled':''}></button></td>`;
     }
     html += '</tr>';
   }
   html += '</tbody>';
   table.innerHTML = html;
 
-  table.querySelectorAll('.slot:not(.booked):not(.past)').forEach(btn => {
-    btn.onclick = () => toggleSlot(
-      parseInt(btn.dataset.court),
-      parseInt(btn.dataset.hour),
-      parseInt(btn.dataset.price)
-    );
+  table.querySelectorAll('.slot:not(.booked)').forEach(btn => {
+    btn.onclick = () => toggleSlot(parseInt(btn.dataset.court), parseInt(btn.dataset.hour), parseInt(btn.dataset.price));
   });
 }
 
