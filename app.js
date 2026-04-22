@@ -807,6 +807,7 @@ function renderMatchMaking() {
 
 function renderSkillTiers() {
   const wrap = document.getElementById('skillTiers');
+  if (!wrap) return;
   const levels = ['BG', 'M', 'P', 'S'];
   wrap.innerHTML = levels.map(lv => {
     const count = state.queue.filter(q => q.level === lv).length;
@@ -968,7 +969,9 @@ function finishMatch(id, auto = false) {
   m.finished = true;
   m.endedAt = Date.now();
   saveData();
-  renderMatchMaking();
+  if (state.currentPage === 'matchmaking') {
+    renderMatchMaking();
+  }
   if (!auto) toast('success', 'จบแมตช์', 'ผู้เล่นสามารถเข้าคิวใหม่ได้');
 }
 
@@ -1342,8 +1345,9 @@ function renderAdmin() {
     dash.style.display = 'block';
     renderCourtMgmt();
     renderAdminStats();
-    renderAdminTable();
     renderAdminMatches();
+    renderQueueManagement();
+    renderAdminTable();
   } else {
     login.style.display = 'flex';
     dash.style.display = 'none';
@@ -1389,6 +1393,37 @@ function saveCourts() {
   saveData();
   toast('success', 'บันทึกเรียบร้อย', `ปิดปรับปรุง ${closed.length} คอร์ท`);
   renderTable();
+}
+
+function renderQueueManagement() {
+  const wrap = document.getElementById('queueList');
+  if (!wrap) return;
+
+  if (state.queue.length === 0) {
+    wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink-3);font-size:13px;">ไม่มีผู้รอจับคู่</div>';
+    return;
+  }
+
+  wrap.innerHTML = state.queue.map(q => {
+    const modeLabel = q.mode === 'single' ? '1v1' : '2v2';
+    return `
+      <div class="queue-item">
+        <div class="queue-item-info">
+          <div class="queue-item-name">${q.name} <span class="queue-item-badge">${q.level}</span></div>
+          <div class="queue-item-details">${q.phone} · ${modeLabel} · เข้าคิวเมื่อ ${new Date(q.joinedAt).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</div>
+        </div>
+        <button class="btn btn-secondary" style="padding:8px 16px;font-size:12px;" onclick="removeQueue('${q.id}')">ลบ</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function removeQueue(id) {
+  state.queue = state.queue.filter(q => q.id !== id);
+  if (state.selfQueueId === id) state.selfQueueId = null;
+  saveData();
+  renderQueueManagement();
+  toast('success', 'ลบคิวแล้ว', 'ผู้รอจับคู่ถูกลบออกจากระบบ');
 }
 
 function tryLogin() {
@@ -1608,6 +1643,73 @@ function init() {
   loadUserSession();
   state.currentPage = detectCurrentPage();
 
+  // Add CSS for queue management dynamically
+  const queueStyle = document.createElement('style');
+  queueStyle.textContent = `
+    .queue-mgmt {
+      background: #fff;
+      border: 1px solid #ececec;
+      border-radius: 4px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .queue-mgmt-title {
+      font-family: 'Bebas Neue', 'Prompt', sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+      color: #111;
+    }
+    .queue-mgmt-desc {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 24px;
+    }
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #f7f7f7;
+      border: 1px solid #ececec;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .queue-item:hover {
+      border-color: #e10028;
+    }
+    .queue-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .queue-item-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+    .queue-item-details {
+      font-size: 13px;
+      color: #555;
+    }
+    .queue-item-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #ffe5e9;
+      color: #e10028;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  `;
+  document.head.appendChild(queueStyle);
+
   // Mobile nav toggle
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.querySelector('.nav-links');
@@ -1738,5 +1840,6 @@ window.cancelMatch = cancelMatch;
 window.toggleBookingDetail = toggleBookingDetail;
 window.toggleAdminDetail = toggleAdminDetail;
 window.changeQty = changeQty;
+window.removeQueue = removeQueue;
 
 document.addEventListener('DOMContentLoaded', init);
